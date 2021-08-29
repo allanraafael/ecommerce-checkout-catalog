@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"text/template"
 
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
@@ -39,6 +41,7 @@ func init() {
 	baseUrlProducts = os.Getenv("PRODUCT_URL")
 }
 
+
 func loadProducts() []Product {
 	// Enviando requisição para microsserviço de produto
 	response, err := http.Get(baseUrlProducts + "/products")
@@ -50,11 +53,21 @@ func loadProducts() []Product {
 
 	var products Products
 	json.Unmarshal(data, &products)
-	fmt.Println(string(data))
 
 	return products.Products
 }
 
+
+func ListProducts(w http.ResponseWriter, r *http.Request) {
+	products := loadProducts()
+
+	t := template.Must(template.ParseFiles("template/catalog.html"))
+	t.Execute(w, products)
+}
+
+
 func main() {
-	loadProducts()
+	r := mux.NewRouter()
+	r.HandleFunc("/", ListProducts)
+	http.ListenAndServe(":8083", r)
 }
