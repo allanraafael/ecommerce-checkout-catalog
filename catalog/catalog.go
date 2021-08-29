@@ -61,13 +61,30 @@ func loadProducts() []Product {
 func ListProducts(w http.ResponseWriter, r *http.Request) {
 	products := loadProducts()
 
-	t := template.Must(template.ParseFiles("template/catalog.html"))
+	t := template.Must(template.ParseFiles("templates/catalog.html"))
 	t.Execute(w, products)
+}
+
+func ShowProduct(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	response, err := http.Get(baseUrlProducts + "/products/" + vars["id"])
+	if err != nil {
+		fmt.Printf("Falha ao carregar requisição HTTP %s\n", err)
+	}
+	data, _ := ioutil.ReadAll(response.Body)
+
+	var product Product
+	json.Unmarshal(data, &product)
+
+	t := template.Must(template.ParseFiles("templates/view.html"))
+	t.Execute(w, product)
 }
 
 
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", ListProducts)
+	r.HandleFunc("/products/{id}", ShowProduct)
 	http.ListenAndServe(":8083", r)
 }
