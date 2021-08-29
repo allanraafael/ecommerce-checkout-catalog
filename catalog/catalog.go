@@ -68,6 +68,7 @@ func ListProducts(w http.ResponseWriter, r *http.Request) {
 func ShowProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
+	// Enviando requisição para microsserviço de produto
 	response, err := http.Get(baseUrlProducts + "/products/" + vars["id"])
 	if err != nil {
 		fmt.Printf("Falha ao carregar requisição HTTP %s\n", err)
